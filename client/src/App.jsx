@@ -19,14 +19,21 @@ export default function App(){
   const [insights, setInsights] = useState(null)
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [fetchError, setFetchError] = useState('')
+  const [listPage, setListPage] = useState(1)
+  const [pageSize] = useState(10)
+  const [hasNextPage, setHasNextPage] = useState(false)
 
-  async function load(){
-    const response = await fetch(`${API_BASE_URL}/employees`)
-    setEmps(await response.json())
+  async function loadEmployees(page = 1){
+    const offset = (page - 1) * pageSize
+    const response = await fetch(`${API_BASE_URL}/employees?limit=${pageSize}&offset=${offset}`)
+    const data = await response.json()
+    setEmps(data)
+    setListPage(page)
+    setHasNextPage(data.length === pageSize)
   }
 
   useEffect(() => {
-    load()
+    loadEmployees(1)
   }, [])
 
   async function create(employee){
@@ -35,7 +42,7 @@ export default function App(){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(employee),
     })
-    load()
+    loadEmployees(1)
     setCurrentPage('employees')
   }
 
@@ -56,7 +63,7 @@ export default function App(){
     const response = await fetch(`${API_BASE_URL}/employees/${encodeURIComponent(id)}`)
 
     if (!response.ok){
-      setFetchError('Employee not found.')
+      setFetchError('No data found')
       return
     }
 
@@ -67,9 +74,12 @@ export default function App(){
     employees: (
       <EmployeeListPage
         employees={emps}
-        onFetchEmployee={fetchEmployeeById}
-        selectedEmployee={selectedEmployee}
-        fetchError={fetchError}
+        listPage={listPage}
+        onPreviousPage={() => loadEmployees(listPage - 1)}
+        onNextPage={() => loadEmployees(listPage + 1)}
+        canPrevious={listPage > 1}
+        canNext={hasNextPage}
+        pageSize={pageSize}
       />
     ),
     add: <AddEmployeePage onCreate={create} />,

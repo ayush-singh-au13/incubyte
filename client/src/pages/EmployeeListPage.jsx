@@ -1,16 +1,20 @@
 import React from 'react'
-import EmployeeList from '../components/EmployeeList'
+import EmployeeTable from '../components/EmployeeTable'
 
-export default function EmployeeListPage({ employees, onFetchEmployee, selectedEmployee, fetchError }) {
+export default function EmployeeListPage({ employees, listPage, onPreviousPage, onNextPage, canPrevious, canNext }) {
   return (
     <div>
       <h2>All Employees</h2>
-      <EmployeeList
-        employees={employees}
-        onFetchEmployee={onFetchEmployee}
-        selectedEmployee={selectedEmployee}
-        fetchError={fetchError}
-      />
+      <EmployeeTable employees={employees} />
+      <div className="pagination">
+        <button type="button" onClick={onPreviousPage} disabled={!canPrevious}>
+          Previous
+        </button>
+        <span className="pagination-info">Page {listPage}</span>
+        <button type="button" onClick={onNextPage} disabled={!canNext}>
+          Next
+        </button>
+      </div>
     </div>
   )
 }
