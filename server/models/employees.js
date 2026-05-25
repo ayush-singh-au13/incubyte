@@ -1,4 +1,4 @@
-const { getDb, init } = require('../db');
+const { getDb, init } = require('../config/db');
 
 function pgRow(result) {
   return result.rows[0];

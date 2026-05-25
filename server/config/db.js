@@ -2,7 +2,7 @@ const path = require('path');
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname,"..", '.env') });
 
 console.log('Initializing database connection...', process.env.DATABASE_URL);
 
