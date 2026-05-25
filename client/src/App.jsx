@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { API_BASE_URL } from './config'
-import AddEmployee from './components/AddEmployee'
-import EmployeeList from './components/EmployeeList'
-import Insights from './components/Insights'
+import AddEmployeePage from './pages/AddEmployeePage'
+import EmployeeListPage from './pages/EmployeeListPage'
+import GetEmployeePage from './pages/GetEmployeePage'
+import InsightsPage from './pages/InsightsPage'
+
+const pageLabels = {
+  employees: 'Employees',
+  add: 'Add Employee',
+  search: 'Search Employee',
+  insights: 'Insights',
+}
 
 export default function App(){
+  const [currentPage, setCurrentPage] = useState('employees')
   const [emps, setEmps] = useState([])
   const [country, setCountry] = useState('USA')
   const [insights, setInsights] = useState(null)
@@ -27,6 +36,7 @@ export default function App(){
       body: JSON.stringify(employee),
     })
     load()
+    setCurrentPage('employees')
   }
 
   async function getInsights(){
@@ -53,34 +63,40 @@ export default function App(){
     setSelectedEmployee(await response.json())
   }
 
+  const pages = {
+    employees: (
+      <EmployeeListPage
+        employees={emps}
+        onFetchEmployee={fetchEmployeeById}
+        selectedEmployee={selectedEmployee}
+        fetchError={fetchError}
+      />
+    ),
+    add: <AddEmployeePage onCreate={create} />,
+    search: <GetEmployeePage onFetchEmployee={fetchEmployeeById} selectedEmployee={selectedEmployee} fetchError={fetchError} />,
+    insights: <InsightsPage country={country} onCountryChange={setCountry} onGetInsights={getInsights} insights={insights} />,
+  }
+
   return (
-    <div className="app">
-      <h1>Salary Manager</h1>
+    <div className="app-layout">
+      <aside className="sidebar">
+        <div className="logo">Salary Manager</div>
+        <nav>
+          {Object.entries(pageLabels).map(([pageKey, pageLabel]) => (
+            <button
+              key={pageKey}
+              className={currentPage === pageKey ? 'nav-button active' : 'nav-button'}
+              onClick={() => setCurrentPage(pageKey)}
+            >
+              {pageLabel}
+            </button>
+          ))}
+        </nav>
+      </aside>
 
-      <div className="panel">
-        <h2>Add Employee</h2>
-        <AddEmployee onCreate={create} />
-      </div>
-
-      <div className="panel">
-        <h2>Employee List</h2>
-        <EmployeeList
-          employees={emps}
-          onFetchEmployee={fetchEmployeeById}
-          selectedEmployee={selectedEmployee}
-          fetchError={fetchError}
-        />
-      </div>
-
-      <div className="panel">
-        <h2>Insights</h2>
-        <Insights
-          country={country}
-          onCountryChange={setCountry}
-          onGetInsights={getInsights}
-          insights={insights}
-        />
-      </div>
+      <main className="main-content">
+        {pages[currentPage]}
+      </main>
     </div>
   )
 }
